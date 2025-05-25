@@ -12,7 +12,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -49,15 +48,12 @@ public class SeatReservationActivity extends AppCompatActivity {
     private static final String JWT_TOKEN_KEY = "jwt_token";
     private static final int CONNECT_TIMEOUT = 10000;
     private static final int READ_TIMEOUT = 10000;
+    private final OkHttpClient client = new OkHttpClient();
 
+    private LinearLayout top5Container;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private TextView textTimer;
-    private TextView sortedTextTimer;
-
-    private LinearLayout top5Container;
-    private Button btnSortByTime, btnSortByExtension, btnSortByFavorite;
-    private final OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,18 +65,7 @@ public class SeatReservationActivity extends AppCompatActivity {
         fetchUserInfo();
         updateMySeatInfo(); // 내 좌석 정보 업데이트 시작
 
-        setContentView(R.layout.seat_reservation);
-        top5Container = findViewById(R.id.top5Container);
-        btnSortByTime = findViewById(R.id.btnSortByTime);
-        btnSortByExtension = findViewById(R.id.btnSortByExtension);
-        btnSortByFavorite = findViewById(R.id.btnSortByFavorite);
         textTimer = findViewById(R.id.textTimer);
-        //sortedTextTimer = findViewById(R.id.sortedTextTimer);
-
-
-        btnSortByTime.setOnClickListener(v -> fetchTop5ByRemainingTime());
-        btnSortByExtension.setOnClickListener(v -> fetchTop5ByExtension());
-        btnSortByFavorite.setOnClickListener(v -> fetchFavoriteSeats());
         textTimer.setOnClickListener(v -> showSeatStatusDialog());
     }
 
@@ -110,6 +95,17 @@ public class SeatReservationActivity extends AppCompatActivity {
         } else {
             Log.e(TAG, "QR 코드 보기 버튼을 찾을 수 없습니다");
         }
+
+        //시간 연장 버튼 설정
+        Button sortByTimeButton = findViewById(R.id.btnSortByTime);
+        if (sortByTimeButton != null) {
+            sortByTimeButton.setOnClickListener(v -> {
+                // 처리
+                fetchTop5ByRemainingTime();
+            });
+        } else {
+            Log.e(TAG, "시간 연장 버튼을 찾을 수 없습니다");
+        }
     }
 
     private void setupFloorButtons() {
@@ -131,7 +127,7 @@ public class SeatReservationActivity extends AppCompatActivity {
         Log.d(TAG, "사용자 정보 조회 시작");
         // 로딩 다이얼로그 표시
         showLoadingDialog();
-        
+
         executorService.execute(() -> {
             HttpURLConnection connection = null;
             try {
@@ -146,13 +142,13 @@ public class SeatReservationActivity extends AppCompatActivity {
                 mainHandler.post(() -> {
                     dismissLoadingDialog();
                     new AlertDialog.Builder(SeatReservationActivity.this)
-                        .setTitle("오류")
-                        .setMessage("사용자 정보를 가져오는데 실패했습니다.\n다시 로그인해주세요.")
-                        .setPositiveButton("확인", (dialog, which) -> {
-                            dialog.dismiss();
-                            finish();
-                        })
-                        .show();
+                            .setTitle("오류")
+                            .setMessage("사용자 정보를 가져오는데 실패했습니다.\n다시 로그인해주세요.")
+                            .setPositiveButton("확인", (dialog, which) -> {
+                                dialog.dismiss();
+                                finish();
+                            })
+                            .show();
                 });
             } finally {
                 if (connection != null) {
@@ -167,7 +163,7 @@ public class SeatReservationActivity extends AppCompatActivity {
         Log.d(TAG, "Connection 생성 시작");
         URL url = new URL(BASE_URL + USER_INFO_ENDPOINT);
         Log.d(TAG, "요청 URL: " + url.toString());
-        
+
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(CONNECT_TIMEOUT);
         connection.setReadTimeout(READ_TIMEOUT);
@@ -175,12 +171,12 @@ public class SeatReservationActivity extends AppCompatActivity {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        
+
         // JWT 토큰 가져오기
         String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE)
                 .getString(JWT_TOKEN_KEY, "");
         Log.d(TAG, "JWT 토큰 존재 여부: " + (!jwtToken.isEmpty() ? "있음" : "없음"));
-        
+
         if (!jwtToken.isEmpty()) {
             Log.d(TAG, "JWT 토큰 길이: " + jwtToken.length());
             // 토큰 형식 확인
@@ -204,7 +200,7 @@ public class SeatReservationActivity extends AppCompatActivity {
             Log.e(TAG, "요청 본문 전송 중 오류", e);
             throw new IOException("요청 본문 전송 실패", e);
         }
-        
+
         Log.d(TAG, "Connection 생성 완료");
         return connection;
     }
@@ -213,14 +209,14 @@ public class SeatReservationActivity extends AppCompatActivity {
         Log.d(TAG, "서버 응답 처리 시작");
         int responseCode = connection.getResponseCode();
         Log.d(TAG, "서버 응답 코드: " + responseCode);
-        
+
         InputStream inputStream = null;
         String response = null;
-        
+
         try {
             inputStream = (responseCode >= 200 && responseCode < 300) ?
                     connection.getInputStream() : connection.getErrorStream();
-            
+
             if (inputStream != null) {
                 response = convertInputStreamToString(inputStream);
                 Log.d(TAG, "서버 응답 내용: " + response);
@@ -240,7 +236,7 @@ public class SeatReservationActivity extends AppCompatActivity {
                 }
             }
         }
-        
+
         if (responseCode == 401) {
             Log.e(TAG, "인증 실패 (401): " + response);
             handleAuthError("로그인이 만료되었습니다. 다시 로그인해주세요.");
@@ -261,23 +257,23 @@ public class SeatReservationActivity extends AppCompatActivity {
     private void handleAuthError(String message) {
         // SharedPreferences에서 JWT 토큰 삭제
         getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE)
-            .edit()
-            .remove(JWT_TOKEN_KEY)
-            .apply();
-        
+                .edit()
+                .remove(JWT_TOKEN_KEY)
+                .apply();
+
         mainHandler.post(() -> {
             new AlertDialog.Builder(SeatReservationActivity.this)
-                .setTitle("오류")
-                .setMessage(message)
-                .setPositiveButton("확인", (dialog, which) -> {
-                    dialog.dismiss();
-                    // 로그인 화면으로 이동
-                    Intent intent = new Intent(SeatReservationActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .show();
+                    .setTitle("오류")
+                    .setMessage(message)
+                    .setPositiveButton("확인", (dialog, which) -> {
+                        dialog.dismiss();
+                        // 로그인 화면으로 이동
+                        Intent intent = new Intent(SeatReservationActivity.this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .show();
         });
     }
 
@@ -306,7 +302,7 @@ public class SeatReservationActivity extends AppCompatActivity {
     private void processServerResponse(int responseCode, String response) {
         Log.d(TAG, "서버 응답 처리 시작 - 코드: " + responseCode);
         Log.d(TAG, "처리할 응답 내용: " + response);
-        
+
         // 204 NO_CONTENT 응답 처리
         if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
             Log.d(TAG, "서버 응답이 NO_CONTENT입니다. QR 코드 생성으로 진행합니다.");
@@ -315,7 +311,7 @@ public class SeatReservationActivity extends AppCompatActivity {
             String email = prefs.getString("user_email", "");
             String studentId = prefs.getString("student_id", "");
             String name = prefs.getString("user_name", "");
-            
+
             if (!email.isEmpty() && !studentId.isEmpty() && !name.isEmpty()) {
                 mainHandler.post(() -> {
                     dismissLoadingDialog();
@@ -346,7 +342,7 @@ public class SeatReservationActivity extends AppCompatActivity {
 
                 final JSONObject jsonResponse = new JSONObject(response);
                 Log.d(TAG, "JSON 파싱 성공: " + jsonResponse.toString());
-                
+
                 // 필수 필드 확인
                 if (!jsonResponse.has("email")) {
                     Log.e(TAG, "응답에 email 필드 없음");
@@ -361,17 +357,17 @@ public class SeatReservationActivity extends AppCompatActivity {
                 String studentId = jsonResponse.optString("studentId", ""); // studentId가 없을 수도 있음
                 String name = jsonResponse.optString("name", "");           // name이 없을 수도 있음
                 int entry = jsonResponse.optInt("entry", -1);           // entry가 없을 수도 있음
-                
+
                 Log.d(TAG, "파싱된 정보 - 이메일: " + email + ", 학번: " + studentId + ", 이름: " + name + ", entry: " + entry);
 
                 // 사용자 정보 SharedPreferences에 저장 (QR 코드 화면에서 사용)
                 getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).edit()
-                    .putString("user_email", email)
-                    .putString("student_id", studentId)
-                    .putString("user_name", name)
-                    .apply();
+                        .putString("user_email", email)
+                        .putString("student_id", studentId)
+                        .putString("user_name", name)
+                        .apply();
                 Log.d(TAG, "사용자 정보 SharedPreferences에 저장 완료");
-                
+
                 mainHandler.post(() -> {
                     dismissLoadingDialog();
                     navigateToQrCodeShow(email, studentId, name, entry);
@@ -453,13 +449,13 @@ public class SeatReservationActivity extends AppCompatActivity {
                 if (responseCode == 200) {
                     String response = convertInputStreamToString(connection.getInputStream());
                     JSONObject jsonResponse = new JSONObject(response);
-                    
+
                     if (jsonResponse.has("seatId")) {
                         String seatId = jsonResponse.getString("seatId");
                         long remainingMinutes = jsonResponse.optLong("remainingMinutes", 0);
                         int numOfExtensions = jsonResponse.optInt("numOfExtensions", 0);
                         int seatNumber = Integer.parseInt(seatId);
-                        
+
                         mainHandler.post(() -> updateTimer(remainingMinutes, numOfExtensions, seatNumber));
                     } else {
                         // 좌석 정보가 없는 경우 메시지 표시
@@ -470,12 +466,12 @@ public class SeatReservationActivity extends AppCompatActivity {
                         });
                     }
                 } else {
-                     // 오류 발생 시 메시지 표시 (선택 사항)
-                     mainHandler.post(() -> {
-                         if (textTimer != null) {
-                             textTimer.setText("좌석 정보를 가져오는데 실패했습니다.");
-                         }
-                     });
+                    // 오류 발생 시 메시지 표시 (선택 사항)
+                    mainHandler.post(() -> {
+                        if (textTimer != null) {
+                            textTimer.setText("좌석 정보를 가져오는데 실패했습니다.");
+                        }
+                    });
                 }
             } catch (Exception e) {
                 Log.e(TAG, "내 좌석 정보 업데이트 중 오류", e);
@@ -495,8 +491,8 @@ public class SeatReservationActivity extends AppCompatActivity {
     // 타이머 업데이트 메서드
     private void updateTimer(long remainingMinutes, int numOfExtensions, int seatNumber) {
         if (textTimer != null) {
-            String timerMessage = String.format("%d번 좌석 | 남은 시간: %s | 연장 가능 횟수: %d회", 
-                seatNumber, formatTime(remainingMinutes), numOfExtensions);
+            String timerMessage = String.format("%d번 좌석 | 남은 시간: %s | 연장 가능 횟수: %d회",
+                    seatNumber, formatTime(remainingMinutes), numOfExtensions);
             textTimer.setText(timerMessage);
         }
     }
@@ -530,17 +526,17 @@ public class SeatReservationActivity extends AppCompatActivity {
                 if (responseCode == 200) {
                     String response = convertInputStreamToString(connection.getInputStream());
                     JSONObject jsonResponse = new JSONObject(response);
-                    
+
                     if (jsonResponse.has("seatId")) {
                         String seatId = jsonResponse.getString("seatId");
                         long remainingMinutes = jsonResponse.optLong("remainingMinutes", 0);
                         int numOfExtensions = jsonResponse.optInt("numOfExtensions", 0);
-                        
+
                         mainHandler.post(() -> {
                             new AlertDialog.Builder(SeatReservationActivity.this)
                                     .setTitle("내 좌석 정보")
-                                    .setMessage(String.format("좌석 번호: %s\n남은 시간: %s\n연장 가능 횟수: %d회\n\n무엇을 하시겠습니까?", 
-                                        seatId, formatTime(remainingMinutes), numOfExtensions))
+                                    .setMessage(String.format("좌석 번호: %s\n남은 시간: %s\n연장 가능 횟수: %d회\n\n무엇을 하시겠습니까?",
+                                            seatId, formatTime(remainingMinutes), numOfExtensions))
                                     .setPositiveButton("연장", (dialog, which) -> {
                                         sendExtendRequest();
                                         dialog.dismiss();
@@ -642,12 +638,23 @@ public class SeatReservationActivity extends AppCompatActivity {
             }
         });
     }
-    
-    //SeatTop5DisplayActivity에 있던 것들
+
+    //top5
+
     private void fetchTop5ByRemainingTime() {
-        OkHttpClient client = new OkHttpClient();
+        String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).getString(JWT_TOKEN_KEY, "");
+        if (jwtToken.isEmpty()) {
+            runOnUiThread(() -> Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show());
+            return;
+        }
+
+        if (!jwtToken.startsWith("Bearer ")) {
+            jwtToken = "Bearer " + jwtToken;
+        }
+
         Request request = new Request.Builder()
-                .url("https://your-api-url.com/seats/remaining-time")
+                .url("https://www.noshow2025.shop/api/seats/remainingTime")
+                .addHeader("Authorization", jwtToken) // ✅ 헤더에 JWT 포함
                 .get()
                 .build();
 
@@ -655,68 +662,6 @@ public class SeatReservationActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    String jsonString = response.body().string();
-                    try {
-                        JSONArray seatArray = new JSONArray(jsonString);
-                        showSeatList(seatArray);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
-
-    private void fetchTop5ByExtension() {
-        Request request = new Request.Builder()
-                .url("https://www.noshow2025.shop/api/seats/remainingNumOfExtension")
-                .get()
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                try {
-                    JSONArray jsonArray = new JSONArray(response.body().string());
-                    List<SeatReservationActivity.SeatRemainingNumOfExtensionResponse> list = new ArrayList<>();
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject obj = jsonArray.getJSONObject(i);
-                        list.add(new SeatReservationActivity.SeatRemainingNumOfExtensionResponse(
-                                obj.getString("seatId"),
-                                obj.getInt("numOfExtensions"),
-                                obj.getLong("remainingMinutes")
-                        ));
-                    }
-                    list.sort(Comparator.comparingInt((SeatReservationActivity.SeatRemainingNumOfExtensionResponse s) -> s.numOfExtensions)
-                            .thenComparingLong(s -> s.remainingMinutes));
-                    List<SeatReservationActivity.SeatRemainingNumOfExtensionResponse> top5 = list.subList(0, Math.min(5, list.size()));
-                    runOnUiThread(() -> updateTop5TextByExtension(top5));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    private void fetchFavoriteSeats() {
-        Request request = new Request.Builder()
-                .url("https://www.noshow2025.shop/api/favorite")
-                .get()
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> Toast.makeText(SeatReservationActivity.this, "서버 요청 실패", Toast.LENGTH_SHORT).show());
             }
 
@@ -724,76 +669,31 @@ public class SeatReservationActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 try {
                     JSONArray jsonArray = new JSONArray(response.body().string());
-                    List<String> seatIds = new ArrayList<>();
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        seatIds.add(jsonArray.getJSONObject(i).getString("seatId"));
+                    List<JSONObject> top5List = new ArrayList<>();
+                    for (int i = 0; i < Math.min(5, jsonArray.length()); i++) {
+                        top5List.add(jsonArray.getJSONObject(i));
                     }
-                    runOnUiThread(() -> updateFavoriteSeats(seatIds));
+
+                    runOnUiThread(() -> {
+                        top5Container.removeAllViews();
+                        for (JSONObject obj : top5List) {
+                            try {
+                                String seatId = obj.getString("seatId");
+                                long remainingMinutes = obj.getLong("remainingMinutes");
+
+                                TextView tv = new TextView(SeatReservationActivity.this);
+                                tv.setText("좌석 " + seatId + " - " + remainingMinutes + "분 남음");
+                                tv.setTextSize(16f);
+                                top5Container.addView(tv);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-    }
-
-    private void updateTop5Text(List<SeatReservationActivity.SeatRemainingTimeResponse> list) {
-        top5Container.removeAllViews();
-        for (SeatReservationActivity.SeatRemainingTimeResponse item : list) {
-            TextView tv = new TextView(this);
-            tv.setText("좌석 " + item.seatId + " - " + item.remainingMinutes + "분 남음");
-            tv.setTextSize(16f);
-            top5Container.addView(tv);
-        }
-    }
-
-    private void updateTop5TextByExtension(List<SeatReservationActivity.SeatRemainingNumOfExtensionResponse> list) {
-        top5Container.removeAllViews();
-        for (SeatReservationActivity.SeatRemainingNumOfExtensionResponse item : list) {
-            TextView tv = new TextView(this);
-            tv.setText("좌석 " + item.seatId + " - " + item.remainingMinutes + "분 남음 / 연장 " + item.numOfExtensions + "회");
-            tv.setTextSize(16f);
-            top5Container.addView(tv);
-        }
-    }
-
-    private void updateFavoriteSeats(List<String> seatIds) {
-        top5Container.removeAllViews();
-        for (String seatId : seatIds) {
-            TextView tv = new TextView(this);
-            tv.setText("선호 좌석: " + seatId);
-            tv.setTextSize(16f);
-            top5Container.addView(tv);
-        }
-    }
-
-    private void showSeatDialog(String seatId, long remainingMinutes, int numOfExtensions) {
-        new AlertDialog.Builder(this)
-                .setTitle("나의 좌석 정보")
-                .setMessage("좌석 ID: " + seatId +
-                        "\n남은 시간: " + remainingMinutes + "분" +
-                        "\n연장 횟수: " + numOfExtensions + "회")
-                .setPositiveButton("반납", (dialog, which) -> sendReturnRequest())
-                .setNegativeButton("연장", (dialog, which) -> sendExtendRequest())
-                .setNeutralButton("취소", (dialog, which) -> dialog.dismiss())
-                .show();
-    }
-    static class SeatRemainingTimeResponse {
-        String seatId;
-        long remainingMinutes;
-        SeatRemainingTimeResponse(String seatId, long remainingMinutes) {
-            this.seatId = seatId;
-            this.remainingMinutes = remainingMinutes;
-        }
-    }
-
-    static class SeatRemainingNumOfExtensionResponse {
-        String seatId;
-        int numOfExtensions;
-        long remainingMinutes;
-        SeatRemainingNumOfExtensionResponse(String seatId, int numOfExtensions, long remainingMinutes) {
-            this.seatId = seatId;
-            this.numOfExtensions = numOfExtensions;
-            this.remainingMinutes = remainingMinutes;
-        }
     }
 }
