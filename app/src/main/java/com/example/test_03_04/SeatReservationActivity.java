@@ -676,12 +676,19 @@ public class SeatReservationActivity extends AppCompatActivity {
                     }
 
                     runOnUiThread(() -> {
-                        top5Container.removeAllViews();
+                        if (top5List.isEmpty()) {
+                            Log.e(TAG, "top5Container is null! 레이아웃 초기화가 안됨");
+                            Toast.makeText(SeatReservationActivity.this, "레이아웃 오류 발생", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        if(top5Container != null){
+                            top5Container.removeAllViews();
+                        }
                         for (JSONObject obj : top5List) {
                             try {
                                 String seatId = obj.getString("seatId");
                                 long remainingMinutes = obj.getLong("remainingMinutes");
-
+                                Log.d("DEBUG", "seatId: " + seatId + ", remaining: " + remainingMinutes);
                                 TextView tv = new TextView(SeatReservationActivity.this);
                                 tv.setText("좌석 " + seatId + " - " + remainingMinutes + "분 남음");
                                 tv.setTextSize(16f);
