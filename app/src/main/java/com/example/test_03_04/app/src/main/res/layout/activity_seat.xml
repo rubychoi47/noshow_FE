@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/titlebutton"
+        android:layout_width="420dp"
+        android:layout_height="60dp"
+        android:backgroundTint="#0F66AE"
+        android:padding="0dp"
+        android:text="2층 커뮤니티라운지"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageButton
+        android:id="@+id/buttonback"
+        android:layout_width="60dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:background="@color/ajou"
+        android:src="@drawable/ic_arrow_back"
+        android:elevation="10dp"
+        android:contentDescription="뒤로가기 버튼"
+        app:tint="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/seatButton3"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="65dp"
+        android:background="@drawable/seat_circle_blue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="58dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="70dp"
+        android:background="@android:color/transparent"
+        android:text="일반좌석"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titlebutton" />
+
+    <View
+        android:id="@+id/seatButton4"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginStart="130dp"
+        android:layout_marginTop="65dp"
+        android:background="@drawable/seat_circle_green"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="58dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="150dp"
+        android:layout_marginTop="60dp"
+        android:background="@android:color/transparent"
+        android:text="창가석"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/seatButton5"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginStart="200dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/seat_circle_gray"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titlebutton" />
+
+    <TextView
+        android:layout_width="53dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="220dp"
+        android:background="@android:color/transparent"
+        android:text="이용중"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titlebutton" />
+
+    <View
+        android:id="@+id/seatButton6"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginStart="270dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/seat_circle_darkgray"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titlebutton" />
+
+    <TextView
+        android:layout_width="58dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="280dp"
+        android:layout_marginEnd="50dp"
+        android:background="@android:color/transparent"
+        android:text="이용불가"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titlebutton" />
+
+    <ScrollView
+        android:id="@+id/hScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:scrollbars="vertical"
+        android:fillViewport="true"
+        android:contentDescription="좌석 목록"
+        app:layout_constraintTop_toBottomOf="@id/seatButton6"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/seatContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:gravity="center_horizontal"/>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout> 

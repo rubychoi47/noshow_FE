@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">no_show</string>
+    <string name="seat_reservation_text">좌석 예약</string>
+    <string name="favorite_seat">선호 좌석</string>
+    <string name="cancel">Cancel</string>
+    <string name="assign">Assign</string>
+    <string name="this_seat">아래의 좌석으로 배정하시겠습니까?</string>
+    <string name="check_to_seat">배정 좌석 확인</string>
+    <string name="my_seat">나의 좌석</string>
+    <string name="no_user_imformation">이용정보가 없습니다.</string>
+    <string name="qr_code_show">qr 코드 생성</string>
+    <string name="qr_code">QR code</string>
+    <string name="id">아이디(ID)</string>
+    <string name="password">비밀번호(password)</string>
+    <string name="login">Login</string>
+    <string name="notice">Notice</string>
+    <string name="ok">OK</string>
+    <string name="prolongation">연장</string>
+    <string name="return_seat">반납</string>
+    <string name="floor_2">2층\n커뮤니티 라운지</string>
+    <string name="floor_3">3층\n스마트 라운지</string>
+    <string name="floor_4">4층\n스마트 라운지</string>
+    <string name="googlelogin">google Loign</string>
+    <string name="google_client_ID">354675947931-651m2sulv6s8kik4injhdod2bq2h0vt0.apps.googleusercontent.com</string>
+    <string name="close_button_desc">Close QR code screen</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="seat_width">50dp</dimen>
+    <dimen name="seat_height">50dp</dimen>
+    <!-- 필요한 다른 dimension 값들을 여기에 추가하세요 -->
+</resources> 

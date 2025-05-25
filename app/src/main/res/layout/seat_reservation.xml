@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <!-- 상단 파란 직사각형 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/ajou" />
+
+    <!-- 좌석 예약 텍스트 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-60dp"
+        android:gravity="center"
+        android:text="@string/seat_reservation_text"
+        android:textColor="@color/white"
+        android:textSize="35sp" />
+
+
+
+    <!-- 세트들을 수평으로 배치하는 LinearLayout -->
+    <!-- 세트들을 수평으로 배치하는 LinearLayout 끝 -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+
+
+        android:background="@color/gray"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:elevation="1dp">
+
+        <!-- 첫 번째 세트 (TextView + ProgressBar) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center_horizontal"
+
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:text="@string/floor_2"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+
+                android:textStyle="bold" />
+
+            <com.example.test_03_04.CustomCircularProgress
+                android:id="@+id/circularProgress1"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:elevation="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="2층 커뮤니티 라운지 좌석 현황" />
+
+        </LinearLayout>
+
+        <!-- 두 번째 세트 (TextView + ProgressBar) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:gravity="top|center_horizontal"
+                android:text="@string/floor_3"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <com.example.test_03_04.CustomCircularProgress
+                android:id="@+id/circularProgress2"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:elevation="10dp" />
+        </LinearLayout>
+
+        <!-- 세 번째 세트 (TextView + ProgressBar) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:gravity="top|center_horizontal"
+                android:text="@string/floor_4"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <com.example.test_03_04.CustomCircularProgress
+                android:id="@+id/circularProgress3"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:elevation="10dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 선호좌석 + 정렬기준 버튼 가로 배치 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="16dp"
+        android:gravity="center_vertical">
+
+        <!-- 선호좌석 버튼 -->
+        <Button
+            android:id="@+id/btnSortByFavorite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/favorite_seat"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:backgroundTint="@android:color/transparent"
+            android:textStyle="bold"
+            android:layout_marginEnd="12dp" />
+
+        <!-- 시간 기준 정렬 버튼 -->
+        <Button
+            android:id="@+id/btnSortByTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="시간 기준"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:backgroundTint="@android:color/transparent"
+            android:textStyle="bold"
+            android:layout_marginEnd="8dp" />
+
+        <!-- 연장 기준 정렬 버튼 -->
+        <Button
+            android:id="@+id/btnSortByExtension"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="연장 기준"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:backgroundTint="@android:color/transparent"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@color/white" />
+
+    <!-- 좌석 스크롤 영역 -->
+    <HorizontalScrollView
+        android:id="@+id/top5Containers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="horizontal"
+        android:fillViewport="true"
+        android:contentDescription="좌석 목록">
+
+        <LinearLayout
+            android:id="@+id/top5Container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            />
+    </HorizontalScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <!-- QR 코드 생성 버튼 -->
+
+    <!-- 중간 빈 공간 확장 -->
+    <Button
+        android:id="@+id/qr_show_btn"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_gravity="start"
+        android:layout_margin="16dp"
+        android:text="@string/qr_code_show"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:background="@drawable/button_background" />
+
+
+
+    <!-- 하단: 나의 좌석 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/ajou"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/my_seat"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/textTimer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_background_white_ver"
+            android:gravity="start|center_vertical"
+            android:textColor="#333333"
+            android:padding="12dp"
+            android:text="@string/no_user_imformation"
+            android:textSize="16sp"
+            android:textStyle="normal" />
+    </LinearLayout>
+
+</LinearLayout>

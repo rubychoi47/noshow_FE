@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartext-traffic-permitted="true">
+        <domain includeSubdomains="true">* </domain> <!-- 모든 도메인 허용 -->
+    </domain-config>
+</network-security-config>

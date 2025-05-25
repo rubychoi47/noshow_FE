@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 배경 색상 설정 -->
+    <solid android:color="@color/white"/>
+
+    <!-- 테두리 설정 -->
+    <stroke android:color="@color/black" android:width="2dp"/>
+
+    <!-- 텍스트와 테두리 간 간격 설정 -->
+    <padding android:left="16dp" android:right="16dp" android:top="6dp" android:bottom="8dp"/>
+</shape>

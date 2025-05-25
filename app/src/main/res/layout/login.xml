@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/white"
+    >
+
+    <!-- 상단 파란 직사각형 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/ajou" />
+
+    <!-- 로그인 텍스트 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="35sp"
+        android:layout_marginTop="-65dp" />
+
+
+    <!-- 아이디 입력란 -->
+    <EditText
+        android:id="@+id/editTextId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/id"
+        android:inputType="text"
+        android:layout_marginTop="60dp"
+        android:padding="20dp"
+        android:background="@drawable/edit_text_background"
+        android:textSize="16sp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        />
+
+    <!-- 비밀번호 입력란 -->
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:layout_marginTop="-1dp"
+        android:padding="20dp"
+        android:background="@drawable/edit_text_background"
+        android:textSize="16sp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"/>
+
+    <Button
+        android:id="@+id/loginButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="10dp"
+        android:text="@string/login"
+        android:textColor="@color/white"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:clickable="true"
+        android:background="@color/ajou"
+        />
+
+    <ImageButton
+        android:id="@+id/googleLoginButton"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/google_logo"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Google Login Button"
+        android:layout_gravity="center"
+        android:padding="15dp"/>
+</LinearLayout>

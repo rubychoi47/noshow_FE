@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@android:color/white">
+
+    <!-- 제목 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notice"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_gravity="center"/>
+
+    <!-- 구분선 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <!-- 남은 시간 -->
+    <TextView
+        android:id="@+id/remainingTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="남은 시간: 00:00"
+        android:textColor="@color/black"
+        android:textSize="16sp"/>
+
+    <!-- 연장 가능한 횟수 -->
+    <TextView
+        android:id="@+id/extendCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="연장 가능한 횟수: n/3회"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:layout_marginTop="5dp"/>
+
+        <!-- 취소 버튼 -->
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:textSize="16sp"
+            android:background="@color/ajou"
+            android:layout_marginTop="30dp"
+            android:textColor="@color/white"
+            android:padding="10dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="10dp"/>
+
+
+
+</LinearLayout>
