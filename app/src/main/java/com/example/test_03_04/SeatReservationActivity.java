@@ -606,6 +606,7 @@ public class SeatReservationActivity extends AppCompatActivity {
             try {
                 final String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).getString(JWT_TOKEN_KEY, "");
                 if (jwtToken.isEmpty()) {
+                    Log.e(TAG, "JWT 토큰이 없습니다.");
                     mainHandler.post(() -> showToast("로그인이 필요합니다."));
                     return;
                 }
