@@ -78,7 +78,7 @@ public class SeatReservationActivity extends AppCompatActivity {
         //sortedTextTimer = findViewById(R.id.sortedTextTimer);
 
 
-        btnSortByTime.setOnClickListener(v -> fetchTop5ByRemainingTime());
+      //  btnSortByTime.setOnClickListener(v -> fetchTop5ByRemainingTime());
         btnSortByExtension.setOnClickListener(v -> fetchTop5ByExtension());
         btnSortByFavorite.setOnClickListener(v -> fetchFavoriteSeats());
         textTimer.setOnClickListener(v -> showSeatStatusDialog());
@@ -642,7 +642,7 @@ public class SeatReservationActivity extends AppCompatActivity {
             }
         });
     }
-    
+   /*
     //SeatTop5DisplayActivity에 있던 것들
     private void fetchTop5ByRemainingTime() {
         OkHttpClient client = new OkHttpClient();
@@ -671,7 +671,7 @@ public class SeatReservationActivity extends AppCompatActivity {
             }
         });
     }
-
+*/
     private void fetchTop5ByExtension() {
         Request request = new Request.Builder()
                 .url("https://www.noshow2025.shop/api/seats/remainingNumOfExtension")
