@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -66,6 +67,7 @@ public class SeatReservationActivity extends AppCompatActivity {
         updateMySeatInfo(); // 내 좌석 정보 업데이트 시작
 
         textTimer = findViewById(R.id.textTimer);
+        top5Container = findViewById(R.id.top5Container);
         textTimer.setOnClickListener(v -> showSeatStatusDialog());
     }
 
@@ -96,7 +98,7 @@ public class SeatReservationActivity extends AppCompatActivity {
             Log.e(TAG, "QR 코드 보기 버튼을 찾을 수 없습니다");
         }
 
-        //시간 연장 버튼 설정
+        //시간 정렬 버튼 설정
         Button sortByTimeButton = findViewById(R.id.btnSortByTime);
         if (sortByTimeButton != null) {
             sortByTimeButton.setOnClickListener(v -> {
@@ -104,7 +106,18 @@ public class SeatReservationActivity extends AppCompatActivity {
                 fetchTop5ByRemainingTime();
             });
         } else {
-            Log.e(TAG, "시간 연장 버튼을 찾을 수 없습니다");
+            Log.e(TAG, "시간 기준 버튼을 찾을 수 없습니다");
+        }
+
+        // 연장 정렬 버튼 설정
+        Button sortByExtensionButton = findViewById(R.id.btnSortByExtension);
+        if (sortByExtensionButton != null) {
+            sortByExtensionButton.setOnClickListener(v -> {
+                // 처리
+                fetchTop5ByExtension();
+            });
+        } else {
+            Log.e(TAG, "연장 기준 버튼을 찾을 수 없습니다");
         }
     }
 
@@ -655,7 +668,7 @@ public class SeatReservationActivity extends AppCompatActivity {
 
         Request request = new Request.Builder()
                 .url("https://www.noshow2025.shop/api/seats/remainingTime")
-                .addHeader("Authorization", jwtToken) // ✅ 헤더에 JWT 포함
+                .addHeader("Authorization", jwtToken)
                 .get()
                 .build();
 
@@ -676,25 +689,113 @@ public class SeatReservationActivity extends AppCompatActivity {
                     }
 
                     runOnUiThread(() -> {
-                        if (top5List.isEmpty()) {
+                        if (top5Container == null) {
                             Log.e(TAG, "top5Container is null! 레이아웃 초기화가 안됨");
                             Toast.makeText(SeatReservationActivity.this, "레이아웃 오류 발생", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        if(top5Container != null){
-                            top5Container.removeAllViews();
-                        }
+
+                        top5Container.removeAllViews();  // 기존 뷰 제거
+
                         for (JSONObject obj : top5List) {
                             try {
                                 String seatId = obj.getString("seatId");
                                 long remainingMinutes = obj.getLong("remainingMinutes");
-                                Log.d("DEBUG", "seatId: " + seatId + ", remaining: " + remainingMinutes);
+
+                                // 좌석 정보를 보여줄 카드 스타일 TextView
                                 TextView tv = new TextView(SeatReservationActivity.this);
-                                tv.setText("좌석 " + seatId + " - " + remainingMinutes + "분 남음");
+                                tv.setText("좌석 " + seatId + "\n" + remainingMinutes + "분 남음");
                                 tv.setTextSize(16f);
+                                tv.setTextColor(getResources().getColor(R.color.black));
+                                tv.setBackgroundResource(R.drawable.button_background_white_ver); // 둥근 흰 배경
+                                tv.setPadding(24, 24, 24, 24);
+                                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT
+                                );
+                                params.setMargins(16, 0, 16, 0); // 좌우 간격
+                                tv.setLayoutParams(params);
+
                                 top5Container.addView(tv);
                             } catch (Exception e) {
                                 e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    private void fetchTop5ByExtension() {
+        String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).getString(JWT_TOKEN_KEY, "");
+        if (jwtToken.isEmpty()) {
+            runOnUiThread(() -> Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show());
+            return;
+        }
+
+        if (!jwtToken.startsWith("Bearer ")) {
+            jwtToken = "Bearer " + jwtToken;
+        }
+
+        Request request = new Request.Builder()
+                .url("https://www.noshow2025.shop/api/seats/remainingNumOfExtension")
+                .addHeader("Authorization", jwtToken)  // ✅ JWT 토큰 추가
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(SeatReservationActivity.this, "서버 요청 실패", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                try {
+                    JSONArray jsonArray = new JSONArray(response.body().string());
+                    List<JSONObject> top5List = new ArrayList<>();
+                    for (int i = 0; i < Math.min(5, jsonArray.length()); i++) {
+                        top5List.add(jsonArray.getJSONObject(i));
+                    }
+
+                    runOnUiThread(() -> {
+                        if (top5Container == null) {
+                            Log.e(TAG, "top5Container is null! 레이아웃 초기화가 안됨");
+                            Toast.makeText(SeatReservationActivity.this, "레이아웃 오류 발생", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        top5Container.removeAllViews();
+                        for (JSONObject item : top5List) {
+                            try {
+                                String seatId = item.getString("seatId");
+                                long remainingMinutes = item.getLong("remainingMinutes");
+                                int extension = item.getInt("numOfExtensions");
+
+                                TextView tv = new TextView(SeatReservationActivity.this);
+                                tv.setText(
+                                        "좌석 " + seatId + "\n" +
+                                                "남은 시간: " + remainingMinutes + "분\n" +
+                                                "연장 가능: " + extension + "회"
+                                );
+                                tv.setTextSize(16f);
+                                tv.setTextColor(getResources().getColor(R.color.black));
+                                tv.setBackgroundResource(R.drawable.button_background_white_ver); // 흰색 카드 스타일 배경
+                                tv.setPadding(24, 24, 24, 24);
+
+                                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT
+                                );
+                                params.setMargins(16, 0, 16, 0); // 좌우 카드 간격
+                                tv.setLayoutParams(params);
+
+// 레이아웃에 추가
+                                top5Container.addView(tv);
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
                             }
                         }
                     });
