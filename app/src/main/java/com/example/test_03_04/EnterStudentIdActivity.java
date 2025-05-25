@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 public class EnterStudentIdActivity extends AppCompatActivity {
     private static final String TAG = "EnterStudentIdActivity";
     private static final String BASE_URL = "https://www.noshow2025.shop/api";
-    private static final String REGISTER_ENDPOINT = "/auth/register";
+    private static final String REGISTER_ENDPOINT = "/auth/signup";
     private static final String AUTH_PREF_NAME = "auth";
     private static final String JWT_TOKEN_KEY = "jwt_token";
     private static final String USER_EMAIL_KEY = "user_email";
@@ -148,7 +148,7 @@ public class EnterStudentIdActivity extends AppCompatActivity {
     }
 
     private void processServerResponse(int responseCode, String response) {
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == 409) {
             try {
                 JSONObject jsonResponse = new JSONObject(response);
                 if (jsonResponse.has("accessToken")) {
