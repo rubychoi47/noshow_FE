@@ -3,6 +3,7 @@ package com.example.test_03_04;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
 
@@ -49,7 +50,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull String token) {
         Log.d(TAG, "새로운 FCM 토큰 발급: " + token);
-        sendTokenToServer(token);
+        // 앱 로그인 상태일 때만 서버로 전송
+        SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
+        if (!prefs.getString("jwt_token", "").isEmpty()) {
+            sendTokenToServer(token);
+        } else {
+            Log.d(TAG, "로그인 전이라 FCM 토큰 서버 전송 보류");
+        }
     }
 
     private void createNotificationChannel() {

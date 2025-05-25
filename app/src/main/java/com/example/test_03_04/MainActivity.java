@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
 
@@ -36,9 +37,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -74,7 +72,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
+        TextView tv = new TextView(this);
+        tv.setText("앱 실행됨");
+        setContentView(tv);
+
         // Google 로그인 런처는 onCreate에서 먼저 초기화
         setupGoogleLoginLauncher();
         
@@ -102,20 +104,6 @@ public class MainActivity extends AppCompatActivity {
         
         executorService.execute(() -> {
             try {
-                // ANR 감지기 초기화
-                initializeANRWatchDog();
-                
-                // Google 서비스 초기화는 실제 필요할 때까지 지연
-                if (googleSignInClient == null) {
-                    mainHandler.post(() -> {
-                        try {
-                            googleSignInClient = getGoogleClient();
-                        } catch (Exception e) {
-                            Log.e(TAG, "Google 클라이언트 초기화 실패", e);
-                        }
-                    });
-                }
-                
                 isInitialized = true;
                 Log.d(TAG, "앱 초기화 완료");
             } catch (Exception e) {
@@ -422,13 +410,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         try {
-            // ANR 감지기 정리
             if (anrWatchDog != null) {
                 anrWatchDog.interrupt();
                 anrWatchDog = null;
             }
-            
-            // 네트워크 리소스 정리는 백그라운드 스레드에서 처리
+
+            // GoogleSignInClient 관련 정리
+            if (googleSignInClient != null) {
+                googleSignInClient.signOut(); // 이미 로그아웃 시도는 있으나 한 번 더 안전하게 호출
+                googleSignInClient = null;
+            }
+
+            // OkHttp 클라이언트 리소스 정리
             executorService.execute(() -> {
                 try {
                     if (httpClient != null) {
@@ -439,8 +432,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "HTTP 클라이언트 정리 중 오류", e);
                 }
             });
-            
-            // ExecutorService 정리
+
             executorService.shutdown();
             try {
                 if (!executorService.awaitTermination(500, TimeUnit.MILLISECONDS)) {
@@ -450,6 +442,7 @@ public class MainActivity extends AppCompatActivity {
                 executorService.shutdownNow();
                 Thread.currentThread().interrupt();
             }
+
         } catch (Exception e) {
             Log.e(TAG, "리소스 정리 중 오류", e);
         }

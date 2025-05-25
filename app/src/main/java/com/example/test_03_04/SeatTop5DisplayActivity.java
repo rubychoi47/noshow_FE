@@ -46,16 +46,13 @@ public class SeatTop5DisplayActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.d(TAG, "zzz-----------------------------9");
                 e.printStackTrace();
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 try {
-                    Log.d(TAG, "zzz-----------------------------0");
                     JSONArray jsonArray = new JSONArray(response.body().string());
-                    Log.d(TAG, "zzz-----------------------------1");
                     List<SeatRemainingTimeResponse> list = new ArrayList<>();
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject obj = jsonArray.getJSONObject(i);
@@ -66,7 +63,6 @@ public class SeatTop5DisplayActivity extends AppCompatActivity {
                     }
                     //list.sort(Comparator.comparingLong(a -> a.remainingMinutes));
                     List<SeatRemainingTimeResponse> top5 = list.subList(0, Math.min(5, list.size()));
-                    Log.d(TAG, "zzz-----------------------------2");
                     runOnUiThread(() -> updateTop5Text(top5));
                 } catch (Exception e) {
                     e.printStackTrace();
