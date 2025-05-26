@@ -30,7 +30,7 @@
         <activity android:name=".RealSeatReservation" />
         <activity android:name=".QrCodeShow" />
         <activity android:name=".SimpleLoginActivity" />
-        <activity android:name=".SeatTop5DisplayActivity" />
+        <activity android:name=".MySeatActivity" />
 
     </application>
 </manifest> 

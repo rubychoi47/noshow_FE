@@ -63,12 +63,10 @@ public class SeatReservationActivity extends AppCompatActivity {
 
         initializeViews();
         setupFloorButtons();
-        fetchUserInfo();
         updateMySeatInfo(); // 내 좌석 정보 업데이트 시작
 
         textTimer = findViewById(R.id.textTimer);
         top5Container = findViewById(R.id.top5Container);
-        textTimer.setOnClickListener(v -> showSeatStatusDialog());
     }
 
     @Override
@@ -84,7 +82,10 @@ public class SeatReservationActivity extends AppCompatActivity {
         // 타이머 텍스트뷰 초기화
         textTimer = findViewById(R.id.textTimer);
         if (textTimer != null) {
-            textTimer.setOnClickListener(v -> showSeatStatusDialog());
+            textTimer.setOnClickListener(v -> {
+                Intent intent = new Intent(SeatReservationActivity.this, MySeatActivity.class);
+                startActivity(intent);
+            });
         }
 
         // QR 코드 보기 버튼 설정
@@ -462,16 +463,16 @@ public class SeatReservationActivity extends AppCompatActivity {
                 if (responseCode == 200) {
                     String response = convertInputStreamToString(connection.getInputStream());
                     JSONObject jsonResponse = new JSONObject(response);
+                    JSONObject body = jsonResponse.getJSONObject("body");
 
-                    if (jsonResponse.has("seatId")) {
-                        String seatId = jsonResponse.getString("seatId");
-                        long remainingMinutes = jsonResponse.optLong("remainingMinutes", 0);
-                        int numOfExtensions = jsonResponse.optInt("numOfExtensions", 0);
+                    if (body.has("seatId")) {
+                        String seatId = body.getString("seatId");
+                        long remainingMinutes = body.getLong("remainingMinutes");
+                        int numOfExtensions = body.getInt("numOfExtensions");
                         int seatNumber = Integer.parseInt(seatId);
 
                         mainHandler.post(() -> updateTimer(remainingMinutes, numOfExtensions, seatNumber));
                     } else {
-                        // 좌석 정보가 없는 경우 메시지 표시
                         mainHandler.post(() -> {
                             if (textTimer != null) {
                                 textTimer.setText("이용정보가 없습니다.");
@@ -479,7 +480,6 @@ public class SeatReservationActivity extends AppCompatActivity {
                         });
                     }
                 } else {
-                    // 오류 발생 시 메시지 표시 (선택 사항)
                     mainHandler.post(() -> {
                         if (textTimer != null) {
                             textTimer.setText("좌석 정보를 가져오는데 실패했습니다.");
@@ -516,144 +516,6 @@ public class SeatReservationActivity extends AppCompatActivity {
         long minutes = totalMinutes % 60;
         return String.format("%02d:%02d", hours, minutes);
     }
-
-    // 좌석 상태 다이얼로그 표시
-    private void showSeatStatusDialog() {
-        executorService.execute(() -> {
-            HttpURLConnection connection = null;
-            try {
-                final String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).getString(JWT_TOKEN_KEY, "");
-                if (jwtToken.isEmpty()) {
-                    mainHandler.post(() -> showToast("로그인이 필요합니다."));
-                    return;
-                }
-
-                final URL statusUrl = new URL(BASE_URL + "/seat/status");
-                connection = (HttpURLConnection) statusUrl.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Authorization", "Bearer " + jwtToken);
-                connection.setConnectTimeout(CONNECT_TIMEOUT);
-                connection.setReadTimeout(READ_TIMEOUT);
-
-                int responseCode = connection.getResponseCode();
-                if (responseCode == 200) {
-                    String response = convertInputStreamToString(connection.getInputStream());
-                    JSONObject jsonResponse = new JSONObject(response);
-
-                    if (jsonResponse.has("seatId")) {
-                        String seatId = jsonResponse.getString("seatId");
-                        long remainingMinutes = jsonResponse.optLong("remainingMinutes", 0);
-                        int numOfExtensions = jsonResponse.optInt("numOfExtensions", 0);
-
-                        mainHandler.post(() -> {
-                            new AlertDialog.Builder(SeatReservationActivity.this)
-                                    .setTitle("내 좌석 정보")
-                                    .setMessage(String.format("좌석 번호: %s\n남은 시간: %s\n연장 가능 횟수: %d회\n\n무엇을 하시겠습니까?",
-                                            seatId, formatTime(remainingMinutes), numOfExtensions))
-                                    .setPositiveButton("연장", (dialog, which) -> {
-                                        sendExtendRequest();
-                                        dialog.dismiss();
-                                    })
-                                    .setNegativeButton("반납", (dialog, which) -> {
-                                        sendReturnRequest();
-                                        dialog.dismiss();
-                                    })
-                                    .setNeutralButton("취소", (dialog, which) -> dialog.dismiss())
-                                    .show();
-                        });
-                    }
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "좌석 상태 확인 중 오류", e);
-                mainHandler.post(() -> showToast("좌석 정보를 가져오는데 실패했습니다."));
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
-    }
-
-    // 좌석 연장 요청
-    private void sendExtendRequest() {
-        executorService.execute(() -> {
-            HttpURLConnection connection = null;
-            try {
-                final String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).getString(JWT_TOKEN_KEY, "");
-                if (jwtToken.isEmpty()) {
-                    mainHandler.post(() -> showToast("로그인이 필요합니다."));
-                    return;
-                }
-
-                final URL url = new URL(BASE_URL + "/reservation/extend");
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Authorization", "Bearer " + jwtToken);
-                connection.setConnectTimeout(CONNECT_TIMEOUT);
-                connection.setReadTimeout(READ_TIMEOUT);
-
-                int responseCode = connection.getResponseCode();
-                if (responseCode == 200) {
-                    mainHandler.post(() -> {
-                        showToast("좌석이 연장되었습니다.");
-                        updateMySeatInfo(); // 좌석 정보 갱신
-                    });
-                } else {
-                    mainHandler.post(() -> showToast("좌석 연장에 실패했습니다."));
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "좌석 연장 중 오류", e);
-                mainHandler.post(() -> showToast("좌석 연장 중 오류가 발생했습니다."));
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
-    }
-
-    // 좌석 반납 요청
-    private void sendReturnRequest() {
-        executorService.execute(() -> {
-            HttpURLConnection connection = null;
-            try {
-                final String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).getString(JWT_TOKEN_KEY, "");
-                if (jwtToken.isEmpty()) {
-                    Log.e(TAG, "JWT 토큰이 없습니다.");
-                    mainHandler.post(() -> showToast("로그인이 필요합니다."));
-                    return;
-                }
-
-                final URL url = new URL(BASE_URL + "/reservation/exit");
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Authorization", "Bearer " + jwtToken);
-                connection.setConnectTimeout(CONNECT_TIMEOUT);
-                connection.setReadTimeout(READ_TIMEOUT);
-
-                int responseCode = connection.getResponseCode();
-                if (responseCode == 200) {
-                    mainHandler.post(() -> {
-                        showToast("좌석이 반납되었습니다.");
-                        if (textTimer != null) {
-                            textTimer.setText(""); // 타이머 텍스트 초기화
-                        }
-                    });
-                } else {
-                    mainHandler.post(() -> showToast("좌석 반납에 실패했습니다."));
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "좌석 반납 중 오류", e);
-                mainHandler.post(() -> showToast("좌석 반납 중 오류가 발생했습니다."));
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
-    }
-
-    //top5
 
     private void fetchTop5ByRemainingTime() {
         String jwtToken = getSharedPreferences(AUTH_PREF_NAME, MODE_PRIVATE).getString(JWT_TOKEN_KEY, "");
